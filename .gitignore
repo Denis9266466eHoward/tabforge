@@ -1,0 +1,8 @@
+# Javascript
+
+node_modules/
+.parcel-cache/
+npm-debug.log*
+yarn-debug.log*
+.next/
+dist/
