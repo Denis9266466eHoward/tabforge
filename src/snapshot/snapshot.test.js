@@ -39,8 +39,20 @@ describe('createSnapshot', () => {
     );
   });
 
+  it('throws if name is not a string', () => {
+    expect(() => createSnapshot(42, [{ url: 'https://a.com' }], TEST_DIR)).toThrow(
+      'Snapshot name must be a non-empty string'
+    );
+  });
+
   it('throws if tabs array is empty', () => {
     expect(() => createSnapshot('test', [], TEST_DIR)).toThrow(
+      'Tabs must be a non-empty array'
+    );
+  });
+
+  it('throws if tabs is not an array', () => {
+    expect(() => createSnapshot('test', null, TEST_DIR)).toThrow(
       'Tabs must be a non-empty array'
     );
   });
