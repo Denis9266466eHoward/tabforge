@@ -30,6 +30,18 @@ describe('addTags', () => {
   test('throws on invalid snapshot', () => {
     expect(() => addTags(null, ['tag'])).toThrow('Invalid snapshot');
   });
+
+  test('throws when tags argument is not an array', () => {
+    const snap = makeSnapshot('1');
+    expect(() => addTags(snap, 'work')).toThrow();
+  });
+
+  test('filters out empty string tags after trimming', () => {
+    const snap = makeSnapshot('1');
+    const result = addTags(snap, ['  ', 'work']);
+    expect(result.tags).not.toContain('');
+    expect(result.tags).toContain('work');
+  });
 });
 
 describe('removeTags', () => {
@@ -49,6 +61,12 @@ describe('removeTags', () => {
     const snap = makeSnapshot('1', ['work', 'debug']);
     removeTags(snap, ['debug']);
     expect(snap.tags).toEqual(['work', 'debug']);
+  });
+
+  test('removes all tags when all are specified', () => {
+    const snap = makeSnapshot('1', ['work', 'debug']);
+    const result = removeTags(snap, ['work', 'debug']);
+    expect(result.tags).toEqual([]);
   });
 });
 
