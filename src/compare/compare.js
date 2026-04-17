@@ -8,6 +8,8 @@
  */
 function compareSnapshots(snapshotA, snapshotB) {
   if (!snapshotA || !snapshotB) throw new Error('Both snapshots are required');
+  if (!Array.isArray(snapshotA.tabs)) throw new Error('snapshotA.tabs must be an array');
+  if (!Array.isArray(snapshotB.tabs)) throw new Error('snapshotB.tabs must be an array');
 
   const urlsA = new Set(snapshotA.tabs.map(t => t.url));
   const urlsB = new Set(snapshotB.tabs.map(t => t.url));
@@ -15,6 +17,8 @@ function compareSnapshots(snapshotA, snapshotB) {
   const onlyInA = snapshotA.tabs.filter(t => !urlsB.has(t.url));
   const onlyInB = snapshotB.tabs.filter(t => !urlsA.has(t.url));
   const inBoth = snapshotA.tabs.filter(t => urlsB.has(t.url));
+
+  const maxSize = Math.max(urlsA.size, urlsB.size);
 
   return {
     snapshotAId: snapshotA.id,
@@ -24,7 +28,7 @@ function compareSnapshots(snapshotA, snapshotB) {
     inBoth,
     tabCountA: snapshotA.tabs.length,
     tabCountB: snapshotB.tabs.length,
-    similarity: inBoth.length / Math.max(urlsA.size, urlsB.size),
+    similarity: maxSize === 0 ? 1 : inBoth.length / maxSize,
   };
 }
 
