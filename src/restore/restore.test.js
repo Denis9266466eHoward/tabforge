@@ -38,6 +38,11 @@ describe('restoreSnapshot', () => {
     restoreSnapshot('snap-001');
     expect(readSnapshotFromDisk).toHaveBeenCalledWith('snap-001');
   });
+
+  it('throws when snapshot is not found', () => {
+    readSnapshotFromDisk.mockReturnValue(null);
+    expect(() => restoreSnapshot('missing-id')).toThrow();
+  });
 });
 
 describe('restoreByTag', () => {
