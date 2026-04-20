@@ -36,6 +36,12 @@ describe('renameSnapshot', () => {
     expect(result.updatedAt).toBeDefined();
   });
 
+  test('does not mutate the original snapshot', () => {
+    const snap = makeSnapshot({ name: 'Original' });
+    renameSnapshot(snap, 'Changed');
+    expect(snap.name).toBe('Original');
+  });
+
   test('throws on invalid snapshot', () => {
     expect(() => renameSnapshot(null, 'x')).toThrow('Invalid snapshot');
   });
