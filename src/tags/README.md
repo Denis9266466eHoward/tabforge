@@ -26,6 +26,17 @@ Filters an array of snapshots, returning only those that include the given tag.
 const workSnaps = filterByTag(allSnapshots, 'work');
 ```
 
+### `filterByTags(snapshots, tags, match)`
+Filters an array of snapshots by multiple tags. The `match` option controls whether snapshots must include `'any'` or `'all'` of the provided tags. Defaults to `'any'`.
+
+```js
+// snapshots that have at least one of these tags
+const results = filterByTags(allSnapshots, ['work', 'frontend']);
+
+// snapshots that have ALL of these tags
+const strict = filterByTags(allSnapshots, ['work', 'frontend'], 'all');
+```
+
 ### `listAllTags(snapshots)`
 Returns a sorted array of all unique tags found across a list of snapshots.
 
