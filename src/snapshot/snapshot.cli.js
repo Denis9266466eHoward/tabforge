@@ -2,43 +2,43 @@
 'use strict';
 
 const { createSnapshot, loadSnapshot } = require('./snapshot');
-const { saveSnapshotToDisk, readSnapshotFromDisk, listSnapshotIds } = require('../storage/storage');
+const { saveSnapshotToDisk, readSnapshotFromDisk, listSnapshotIds, deleteSnapshotFromDisk } = require('../storage/storage');
 
 function parseArgs(argv) {
-  const [cmd, ...rest] = argv;
-  return { cmd, args: rest };
+  const [command, ...rest] = argv;
+  const flags = {};
+  const positional = [];
+
+  for (let i = 0; i < rest.length; i++) {
+    if (rest[i].startsWith('--')) {
+      const key = rest[i].slice(2);
+      const next = rest[i + 1];
+      if (next && !next.startsWith('--')) {
+        flags[key] = next;
+        i++;
+      } else {
+        flags[key] = true;
+      }
+    } else {
+      positional.push(rest[i]);
+    }
+  }
+
+  return { command, flags, positional };
 }
 
 async function main(argv = process.argv.slice(2)) {
-  const { cmd, args } = parseArgs(argv);
+  const { command, flags, positional } = parseArgs(argv);
 
-  switch (cmd) {
+  switch (command) {
     case 'create': {
-      const [name, ...urls] = args;
-      if (!name || urls.length === 0) {
-        console.error('Usage: snapshot create <name> <url1> [url2 ...]');
-        process.exit(1);
-      }
-      const tabs = urls.map((url, i) => ({ id: `tab-${i + 1}`, url, title: url }));
-      const snapshot = createSnapshot(name, tabs);
+      const name = flags.name || positional[0] || 'untitled';
+      const tabs = flags.tabs ? JSON.parse(flags.tabs) : [];
+      const snapshot = createSnapshot({ name, tabs });
       await saveSnapshotToDisk(snapshot);
-      console.log(`Created snapshot "${name}" with ${tabs.length} tab(s). ID: ${snapshot.id}`);
+      console.log(`Snapshot created: ${snapshot.id}`);
       break;
     }
-
-    case 'load': {
-      const [id] = args;
-      if (!id) {
-        console.error('Usage: snapshot load <id>');
-        process.exit(1);
-      }
-      const raw = await readSnapshotFromDisk(id);
-      const snapshot = loadSnapshot(raw);
-      console.log(`Snapshot: ${snapshot.name} (${snapshot.tabs.length} tabs)`);
-      snapshot.tabs.forEach((t, i) => console.log(`  ${i + 1}. ${t.url}`));
-      break;
-    }
-
     case 'list': {
       const ids = await listSnapshotIds();
       if (ids.length === 0) {
@@ -48,10 +48,24 @@ async function main(argv = process.argv.slice(2)) {
       }
       break;
     }
-
+    case 'show': {
+      const id = positional[0] || flags.id;
+      if (!id) { console.error('Error: snapshot id required'); process.exit(1); }
+      const raw = await readSnapshotFromDisk(id);
+      const snapshot = loadSnapshot(raw);
+      console.log(JSON.stringify(snapshot, null, 2));
+      break;
+    }
+    case 'delete': {
+      const id = positional[0] || flags.id;
+      if (!id) { console.error('Error: snapshot id required'); process.exit(1); }
+      await deleteSnapshotFromDisk(id);
+      console.log(`Snapshot deleted: ${id}`);
+      break;
+    }
     default:
-      console.error(`Unknown command: ${cmd}`);
-      console.error('Commands: create, load, list');
+      console.error(`Unknown command: ${command}`);
+      console.error('Usage: snapshot <create|list|show|delete> [options]');
       process.exit(1);
   }
 }
