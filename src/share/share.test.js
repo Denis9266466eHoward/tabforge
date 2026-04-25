@@ -27,6 +27,11 @@ describe('shareSnapshot', () => {
     const store = createStore();
     expect(() => shareSnapshot(store, null)).toThrow('Invalid snapshot');
   });
+
+  it('throws when snapshot is missing an id', () => {
+    const store = createStore();
+    expect(() => shareSnapshot(store, { name: 'No ID', tabs: [] })).toThrow('Invalid snapshot');
+  });
 });
 
 describe('resolveShare', () => {
@@ -77,6 +82,11 @@ describe('listShares', () => {
     shareSnapshot(store, makeSnapshot('b'));
     expect(listShares(store, 'a')).toHaveLength(1);
   });
+
+  it('returns empty array when no shares exist', () => {
+    const store = createStore();
+    expect(listShares(store)).toHaveLength(0);
+  });
 });
 
 describe('isExpired', () => {
@@ -86,5 +96,10 @@ describe('isExpired', () => {
 
   it('returns true for past date', () => {
     expect(isExpired({ expiresAt: new Date(0).toISOString() })).toBe(true);
+  });
+
+  it('returns false for future date', () => {
+    const future = new Date(Date.now() + 60000).toISOString();
+    expect(isExpired({ expiresAt: future })).toBe(false);
   });
 });
